@@ -48,16 +48,22 @@ class NotificationWorker(
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val bodyText = "测试正文12345678901234567890"
+        val titleText = "significant [sɪɡ'nɪfɪkənt]"
+        val bodyText = """
+            Please inform us if there are any significant changes in your plans.
+            
+            adj: 重大的；有效的；有意义的；值得注意的；意味深长的
+            
+            你们的计划如有重大变动，请通知我们。
+        """.trimIndent()
         val notification = NotificationCompat.Builder(applicationContext, MainActivity.CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_dialog_info)
-            .setContentTitle("测试推送")
+            .setContentTitle(titleText)
             .setContentText(bodyText)
             .setStyle(NotificationCompat.BigTextStyle().bigText(bodyText))
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setCategory(NotificationCompat.CATEGORY_REMINDER)
-            .setContentIntent(openAppPendingIntent)
-            .setAutoCancel(true)
+            .setAutoCancel(false)
             .addAction(0, "确定", openAppPendingIntent)
             .addAction(0, "取消", cancelPendingIntent)
             .build()
