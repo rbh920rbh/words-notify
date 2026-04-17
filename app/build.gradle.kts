@@ -43,4 +43,5 @@ dependencies {
     implementation("androidx.activity:activity-ktx:1.9.2")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("androidx.work:work-runtime-ktx:2.9.1")
+    implementation("com.google.code.gson:gson:2.11.0")
 }

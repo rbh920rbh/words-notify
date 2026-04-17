@@ -7,6 +7,8 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.widget.Button
+import android.widget.TextView
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.work.ExistingWorkPolicy
@@ -15,6 +17,8 @@ import androidx.work.WorkManager
 import java.util.concurrent.TimeUnit
 
 class MainActivity : ComponentActivity() {
+    private lateinit var wordCountText: TextView
+
     private val requestNotificationPermission = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { granted ->
@@ -26,7 +30,11 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        wordCountText = findViewById(R.id.wordCountText)
         createNotificationChannel()
+        setupImportButton()
+        setupShowSchemaButton()
+        refreshWordCount()
     }
 
     override fun onStart() {
@@ -70,6 +78,82 @@ class MainActivity : ComponentActivity() {
                 getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
         }
+    }
+
+    private fun setupImportButton() {
+        val importButton: Button = findViewById(R.id.importWordBookButton)
+        val importStatusText: TextView = findViewById(R.id.importStatusText)
+
+        importButton.setOnClickListener {
+            importButton.isEnabled = false
+            importStatusText.text = getString(R.string.import_status_running)
+
+            Thread {
+                val result = runCatching {
+                    WordBookImporter(this).importFromAsset("toefl.json")
+                }
+
+                runOnUiThread {
+                    importButton.isEnabled = true
+                    result.onSuccess {
+                        importStatusText.text = getString(
+                            R.string.import_status_success,
+                            it.importedCount
+                        )
+                        refreshWordCount()
+                    }.onFailure { throwable ->
+                        importStatusText.text = getString(
+                            R.string.import_status_failed,
+                            throwable.message ?: "unknown error"
+                        )
+                    }
+                }
+            }.start()
+        }
+    }
+
+    private fun setupShowSchemaButton() {
+        val showSchemaButton: Button = findViewById(R.id.showSchemaButton)
+        val importStatusText: TextView = findViewById(R.id.importStatusText)
+
+        showSchemaButton.setOnClickListener {
+            showSchemaButton.isEnabled = false
+            importStatusText.text = getString(R.string.schema_status_running)
+
+            Thread {
+                val result = runCatching {
+                    WordBookDatabaseHelper(this).use { helper ->
+                        helper.getTableSchemaSummary()
+                    }
+                }
+
+                runOnUiThread {
+                    showSchemaButton.isEnabled = true
+                    result.onSuccess { schema ->
+                        importStatusText.text = getString(R.string.schema_status_result, schema)
+                    }.onFailure { throwable ->
+                        importStatusText.text = getString(
+                            R.string.schema_status_failed,
+                            throwable.message ?: "unknown error"
+                        )
+                    }
+                }
+            }.start()
+        }
+    }
+
+    private fun refreshWordCount() {
+        Thread {
+            val count = runCatching {
+                WordBookDatabaseHelper(this).use { helper ->
+                    helper.getWordCount()
+                }
+            }.getOrDefault(0)
+
+            runOnUiThread {
+                wordCountText.text = getString(R.string.word_count_label, count)
+            }
+        }.start()
     }
 
     companion object {

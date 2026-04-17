@@ -2,4 +2,14 @@
 <resources>
     <string name="app_name">Words Notify</string>
     <string name="app_ready_text">App is ready. Notification will show in 3 seconds after foreground.</string>
+    <string name="import_word_book">import word book</string>
+    <string name="show_table_schema">show table schema</string>
+    <string name="word_count_label">Current word count: %1$d</string>
+    <string name="import_status_idle">Word book not imported yet.</string>
+    <string name="import_status_running">Importing word book, please wait...</string>
+    <string name="import_status_success">Import finished. Total rows: %1$d</string>
+    <string name="import_status_failed">Import failed: %1$s</string>
+    <string name="schema_status_running">Loading table schema...</string>
+    <string name="schema_status_result">Table schema: %1$s</string>
+    <string name="schema_status_failed">Load schema failed: %1$s</string>
 </resources>
